@@ -6,25 +6,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const audioPlayer = document.getElementById('audioPlayer');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const playPauseIcon = document.getElementById('playPauseIcon');
-    const progressBar = document.getElementById('progressBar');
-    const progress = document.getElementById('progress');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const resetBtn = document.getElementById('resetBtn');
+    const clipboardBtn = document.getElementById('clipboardBtn');
 
-    // Configure axios defaults
     axios.defaults.withCredentials = true;
 
     let audioQueue = [];
     let currentAudioIndex = 0;
     let isProcessing = false;
 
+    playPauseBtn.addEventListener('click', () => {
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            playPauseIcon.classList.replace('fa-play', 'fa-pause');
+        } else {
+            audioPlayer.pause();
+            playPauseIcon.classList.replace('fa-pause', 'fa-play');
+        }
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+        currentAudioIndex++;
+        if (currentAudioIndex < audioQueue.length) {
+            audioPlayer.src = audioQueue[currentAudioIndex];
+            audioPlayer.play();
+        } else {
+            currentAudioIndex = 0;
+            playPauseIcon.classList.replace('fa-pause', 'fa-play');
+        }
+    });
+
     function splitTextIntoChunks(text) {
-        // Split by Nepali punctuation marks but keep the marks
         const chunks = text.split(/([।!?])/);
-        // Combine punctuation with previous chunk and filter empty chunks
         return chunks.reduce((acc, chunk, i) => {
             if (i % 2 === 0) {
-                // Text chunk
                 if (chunk.trim()) {
                     acc.push(chunk.trim() + (chunks[i + 1] || ''));
                 }
@@ -67,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`Server returned status ${response.status}`);
             }
 
-            console.log('API Response:', response.data); // Debug log
+            console.log('API Response:', response.data);
             return response.data.file_url;
         } catch (error) {
             console.error('Error processing text:', error);
@@ -75,121 +89,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function resetAudioQueue() {
-        audioQueue = [];
-        currentAudioIndex = 0;
-        resetPlayer();
-        playerContainer.classList.remove('show');
-    }
-
-    function resetPlayer() {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        progress.style.width = '0%';
-        timeDisplay.textContent = '0:00';
-        playPauseIcon.className = 'fas fa-play';
-        playerContainer.classList.remove('show');
-    }
-
-    function playNextInQueue() {
-        if (currentAudioIndex < audioQueue.length) {
-            audioPlayer.src = audioQueue[currentAudioIndex];
-            audioPlayer.play()
-                .then(() => {
-                    playPauseIcon.className = 'fas fa-pause';
-                })
-                .catch(e => {
-                    console.error('Audio playback failed:', e);
-                    alert('Failed to play audio');
-                });
-        }
-    }
-
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        seconds = Math.floor(seconds % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        audioPlayer.currentTime = pos * audioPlayer.duration;
-    });
-
-    audioPlayer.addEventListener('timeupdate', () => {
-        const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        progress.style.width = percent + '%';
-        timeDisplay.textContent = formatTime(audioPlayer.currentTime);
-    });
-
-    audioPlayer.addEventListener('ended', () => {
-        currentAudioIndex++;
-        if (currentAudioIndex < audioQueue.length) {
-            playNextInQueue();
-        } else {
-            playPauseIcon.className = 'fas fa-play';
-            progress.style.width = '0%';
-            currentAudioIndex = 0;
-        }
-    });
-
     convertBtn.addEventListener('click', async () => {
         const text = textInput.value.trim();
-        if (!text) {
-            alert('Please enter some text');
-            return;
-        }
+        if (!text || isProcessing) return;
 
-        if (isProcessing) return;
         isProcessing = true;
-        
         loadingIndicator.style.display = 'block';
+        playerContainer.style.display = 'none';
         convertBtn.disabled = true;
-        resetAudioQueue();
 
         try {
             const chunks = splitTextIntoChunks(text);
-            audioQueue = await processChunksSequentially(chunks);
-            
-            loadingIndicator.style.display = 'none';
-            playerContainer.classList.add('show');
+            const urls = await processChunksSequentially(chunks);
+            audioQueue = urls;
             currentAudioIndex = 0;
-            playNextInQueue();
-
-            // Add the play/pause functionality
-            playPauseBtn.addEventListener('click', () => {
-                if (audioPlayer.paused) {
-                    audioPlayer.play();
-                    playPauseIcon.className = 'fas fa-pause';
-                } else {
-                    audioPlayer.pause();
-                    playPauseIcon.className = 'fas fa-play';
-                }
-            });
-
+            audioPlayer.src = audioQueue[0];
+            loadingIndicator.style.display = 'none';
+            playerContainer.style.display = 'block';
         } catch (error) {
             console.error('Error:', error);
-            let errorMessage = 'Failed to convert text to speech';
-            if (error.response) {
-                errorMessage += `: ${error.response.data?.message || error.response.statusText}`;
-            } else if (error.request) {
-                errorMessage += ': No response from server';
-            } else {
-                errorMessage += `: ${error.message}`;
-            }
-            alert(errorMessage);
+            loadingIndicator.style.display = 'none';
         } finally {
-            convertBtn.disabled = false;
             isProcessing = false;
+            convertBtn.disabled = false;
         }
     });
 
-    // Remove the original play/pause button event listener
-    // It will be added back after first play
+    clipboardBtn.addEventListener('click', async () => {
+        if (isProcessing) return;
+        
+        try {
+            const text = await navigator.clipboard.readText();
+            textInput.value = text;
+            convertBtn.click();
+        } catch (err) {
+            console.error('Failed to read clipboard:', err);
+        }
+    });
 
-    // Add reset button event listener
-    resetBtn.addEventListener('click', () => {
-        resetAudioQueue();
+    // Check for selected text when popup opens
+    chrome.storage.local.get(['selectedText'], function(result) {
+        if (result.selectedText) {
+            textInput.value = result.selectedText;
+            chrome.storage.local.remove('selectedText');
+            // Automatically start conversion
+            convertBtn.click();
+        }
     });
 });
