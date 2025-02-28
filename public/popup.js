@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await axios({
                 method: 'post',
-                url: 'http://localhost:8000/convert/',
+                url: 'http://4.240.103.39:8000/convert/',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
