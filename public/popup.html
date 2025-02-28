@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             width: 300px;
@@ -60,6 +61,107 @@
             display: none;
             text-align: center;
             color: #6c757d;
+            background: #e9ecef;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .loading[data-ready="true"] {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .custom-audio-player {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 16px;
+            position: relative;
+            border: 1px solid #e9ecef;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .play-pause-btn {
+            background: #007bff;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .play-pause-btn:hover {
+            background: #0056b3;
+        }
+
+        .play-pause-btn i {
+            font-size: 1rem;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            padding: 8px 0;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            background: #007bff;
+            height: 100%;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            font-size: 0.85rem;
+            color: #6c757d;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .reset-btn {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            color: #6c757d;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+            padding: 0;
+        }
+
+        .reset-btn:hover {
+            color: #dc3545;
+            background: transparent;
         }
     </style>
 </head>
@@ -67,15 +169,30 @@
 <body>
     <div class="container">
         <textarea placeholder="नेपाली मा टेक्स्ट लेख्नुहोस्..." id="textInput"></textarea>
-        <button id="convertBtn">Convert to Speech</button>
+        <button id="convertBtn">Shrutify</button>
         <div class="loading" id="loadingIndicator">Converting...</div>
-        <div class="player-container" id="playerContainer">
-            <audio controls id="audioPlayer">
-                Your browser does not support the audio element.
-            </audio>
+        <div id="playerContainer" class="player-container">
+            <div class="custom-audio-player">
+                <button class="reset-btn" id="resetBtn" title="Close player">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="audio-controls">
+                    <button class="play-pause-btn" id="playPauseBtn">
+                        <i class="fas fa-play" id="playPauseIcon"></i>
+                    </button>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                    </div>
+                    <div class="time-display" id="timeDisplay">0:00</div>
+                </div>
+            </div>
+            <audio id="audioPlayer"></audio>
         </div>
     </div>
-    <script src="popup.js"></script>
+    <script src="./popup.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 
 </html>
