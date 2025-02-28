@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let audioQueue = [];
     let currentAudioIndex = 0;
     let isProcessing = false;
+    let nextAudio = null;
 
     playPauseBtn.addEventListener('click', () => {
         if (audioPlayer.paused) {
@@ -24,16 +25,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    audioPlayer.addEventListener('play', () => {
+        preloadNextAudio();
+    });
+
     audioPlayer.addEventListener('ended', () => {
         currentAudioIndex++;
         if (currentAudioIndex < audioQueue.length) {
-            audioPlayer.src = audioQueue[currentAudioIndex];
-            audioPlayer.play();
+            if (nextAudio) {
+                audioPlayer.src = nextAudio.src;
+                audioPlayer.play();
+                nextAudio = null;
+            } else {
+                audioPlayer.src = audioQueue[currentAudioIndex];
+                audioPlayer.play();
+            }
+            preloadNextAudio();
         } else {
             currentAudioIndex = 0;
             playPauseIcon.classList.replace('fa-pause', 'fa-play');
         }
     });
+
+    function preloadNextAudio() {
+        if (currentAudioIndex + 1 < audioQueue.length) {
+            nextAudio = new Audio();
+            nextAudio.src = audioQueue[currentAudioIndex + 1];
+            nextAudio.load();
+        }
+    }
 
     function splitTextIntoChunks(text) {
         const chunks = text.split(/([।!?])/);
