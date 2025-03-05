@@ -86,15 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await axios({
                 method: 'post',
-                url: 'http://4.240.103.39:8000/convert/',
+                url: 'http://127.0.0.1:8000/convert/',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                data: { "input_text": text },
-                validateStatus: function (status) {
-                    return status >= 200 && status < 500;
-                }
+                withCredentials: false,
+                data: { "input_text": text }
             });
 
             if (response.status !== 200) {
@@ -154,6 +152,16 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.storage.local.remove('selectedText');
             // Automatically start conversion
             convertBtn.click();
+        }
+    });
+
+    // Add check for extracted webpage content
+    chrome.storage.local.get(['extractedText'], function(result) {
+        if (result.extractedText) {
+            console.log('Found extracted text:', result.extractedText);
+            // You can uncomment below lines to automatically populate and convert
+            // textInput.value = result.extractedText;
+            // convertBtn.click();
         }
     });
 });
