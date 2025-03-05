@@ -23,15 +23,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'openPopup') {
         chrome.action.openPopup();
     }
-    if (request.action === 'openAudioPlayer') {
-        chrome.windows.create({
-            url: 'public/audioPlayer.html',
-            type: 'popup',
-            width: 450,
-            height: 250
-        });
-        return;
-    }
     if (request.action === 'processNews') {
         fetch(`http://127.0.0.1:8000/news/${request.newsSlug}/`, {
             method: 'POST',
