@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YRSM Audio Player</title>
+    <link rel="stylesheet" href="./fontawesome.min.css">
+    <style>
+        body {
+            width: 300px;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .player-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .progress {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .control-btn:hover {
+            background: #0056b3;
+        }
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #playPauseBtn i {
+            font-size: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="player-container">
+        <div class="progress">
+            <span id="currentTrack">1</span> / <span id="totalTracks">0</span>
+        </div>
+        <div class="controls">
+            <button class="control-btn" id="prevBtn" disabled>
+                <i class="fas fa-backward"></i>
+            </button>
+            <button class="control-btn" id="playPauseBtn">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            <button class="control-btn" id="nextBtn">
+                <i class="fas fa-forward"></i>
+            </button>
+        </div>
+    </div>
+    <audio id="audioPlayer" class="hidden"></audio>
+    <script src="audioPlayer.js"></script>
+</body>
+</html>
